@@ -161,3 +161,6 @@ cython_debug/
 
 # KDE Plasma folder files
 .directory
+
+# local test folder
+test/
