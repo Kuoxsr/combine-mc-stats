@@ -35,6 +35,7 @@ __status__ = "Prototype"
 from pathlib import Path
 import argparse
 import json
+import sys
 
 
 def handle_command_line():
@@ -91,7 +92,7 @@ def main():
     args = handle_command_line()
 
     target: Path = args.path
-    print(f"target: {target}")
+    # print(f"target: {target}")
     # exit()
 
     output_json: dict[str, dict[str, dict[str, int]] | int] = {"stats": {}, "DataVersion": 0}
@@ -100,11 +101,20 @@ def main():
 
     # For each json stats file in the target folder
     json_files: list[Path] = sorted([f for f in target.rglob('*.json')])
+
+    if len(json_files) == 0:
+        sys.exit(f"\nError: There are no JSON files under {target}")
+
     for file in json_files:
 
         # Capture the UUID from the first file
         suffix = file.suffix[0]
-        index = file.stem.index(suffix)  # TODO: This fails if files are not renamed properly
+
+        if suffix not in file.stem:
+            sys.exit(f"\nError: Aborting script.   {file.name} has unexpected name.\n"
+                     f"       Valid name format: {{UUID}}.X.json, where X is a sequence number.")
+
+        index = file.stem.index(suffix)
         uuid = file.stem[:index]
 
         # deserialize json data
@@ -134,11 +144,14 @@ def main():
 
                 output_json["stats"][outer_key][inner_key] += value
 
+    # Build the output file's name using the discovered UUID
+    output_file_path = target / f"{uuid}.json"
+
     # Write the output file to the target folder
-    with open(target / f"{uuid}.json", "w") as fp:
+    with open(output_file_path, "w") as fp:
         json.dump(output_json, fp, indent=4) # , cls=CompactJSONEncoder)
 
-    print(f"\nfile created in {target} with the following contents:\n")
+    print(f"\n{output_file_path.name}\nFile created in {target} with the following contents:\n")
     print(json.dumps(output_json, indent=4)) # , cls=CompactJSONEncoder))
 
 # ------------------------------------------------------
