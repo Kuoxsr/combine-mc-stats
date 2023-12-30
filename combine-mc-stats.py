@@ -27,7 +27,7 @@ Command-line arguments:
     --version   (-v)    Show version number
 """
 
-__version__ = '0.1'
+__version__ = '0.2'
 __maintainer__ = "kuoxsr@gmail.com"
 __status__ = "Prototype"
 
@@ -144,15 +144,20 @@ def main():
 
                 output_json["stats"][outer_key][inner_key] += value
 
+                # Currently, Minecraft loses its mind if values are larger than 2,147,483,647
+                if output_json["stats"][outer_key][inner_key] >= 2_147_483_647:
+                    output_json["stats"][outer_key][inner_key] = 2_147_483_647
+
     # Build the output file's name using the discovered UUID
     output_file_path = target / f"{uuid}.json"
 
     # Write the output file to the target folder
     with open(output_file_path, "w") as fp:
-        json.dump(output_json, fp, indent=4) # , cls=CompactJSONEncoder)
+        json.dump(output_json, fp, indent=4)
 
     print(f"\n{output_file_path.name}\nFile created in {target} with the following contents:\n")
-    print(json.dumps(output_json, indent=4)) # , cls=CompactJSONEncoder))
+    print(json.dumps(output_json, indent=4))
+
 
 # ------------------------------------------------------
 # Main program loop
