@@ -165,5 +165,5 @@ cython_debug/
 # local test folder
 test/
 
-# Storage for stats files I've worked option
+# Storage for stats files I've worked on
 working/
