@@ -36,13 +36,13 @@ Technically, I haven't tried more than two, but that _should_ work.  On the othe
 One way to run the script is to copy the script to the folder that contains the files you want to combine.  With this method, it will already have the correct path, because you will have navigated there in your terminal to run the script:
 
 ```
-[you@localhost:/path/to/target/folder]$ ./combine-mc-stats 
+[you@localhost:/path/to/target/folder]$ ./combine_mc_stats.py 
 ```
 
 ... or you can just pass that folder to the script via command-line parameter, like so:
 
 ```
-[you@localhost:~]$ ./combine-mc-stats /path/to/target/folder 
+[you@localhost:~]$ ./combine_mc_stats.py /path/to/target/folder 
 ```
 
 I have not tested whether this script runs in a Windows environment, only Linux.  Your mileage may vary.  If you try it in Windows and it doesn't work, fix the problem and submit a pull request.  An issue in the bug tracker for that particular problem will likely go nowhere, because I do not own a copy of Windows in which to test.  If it _does_ work in Windows, let me know so that I can remove this paragraph.  It would also be helpful to let me know the proper syntax for that platform, so I can include examples for others.
