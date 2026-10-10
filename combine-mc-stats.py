@@ -4,8 +4,8 @@
 Problem: Automatically combine multiple Minecraft statistics files,
 in the event that they get cleared for some reason, and you don't realize
 until you have more stats in a second file.
-Target Users: Me
-Target System: GNU/Linux
+Target Users: Me/Us
+Target System: GNU/Linux/Unix/Mac
 Interface: Command-line
 Functional Requirements: Take a set of statistics json files and combine the totals within them
 Notes:
@@ -27,7 +27,7 @@ Command-line arguments:
     --version   (-v)    Show version number
 """
 
-__version__ = '0.2'
+__version__ = '0.3'
 __maintainer__ = "kuoxsr@gmail.com"
 __status__ = "Prototype"
 
@@ -94,69 +94,95 @@ def main():
     target: Path = args.path
     # print(f"target: {target}")
     # exit()
-
-    output_json: dict[str, dict[str, dict[str, int]] | int] = {"stats": {}, "DataVersion": 0}
+    
     data_version: int = 0
     uuid: str = ""
 
     # For each json stats file in the target folder
     json_files: list[Path] = sorted([f for f in target.rglob('*.json')])
-
-    if len(json_files) == 0:
+    files_found = len(json_files)
+    if files_found == 0:
         sys.exit(f"\nError: There are no JSON files under {target}")
 
-    for file in json_files:
+    json1_files: list[Path] = sorted([f for f in target.rglob('*.1.json')])
+    json2_files: list[Path] = sorted([f for f in target.rglob('*.2.json')])
+    print()
+    
+    print(f"Combining from {len(json1_files)} old files and {len(json2_files)} new files")
+    matches = 0
+
+    for file1 in json1_files:
 
         # Capture the UUID from the first file
-        suffix = file.suffix[0]
+        suffix1 = file1.suffix[0]
 
-        if suffix not in file.stem:
-            sys.exit(f"\nError: Aborting script.   {file.name} has unexpected name.\n"
+        if suffix1 not in file1.stem:
+            sys.exit(f"\nError: Aborting script.   {file1.name} has unexpected name.\n"
                      f"       Valid name format: {{UUID}}.X.json, where X is a sequence number.")
 
-        index = file.stem.index(suffix)
-        uuid = file.stem[:index]
+        index1 = file1.stem.index(suffix1)
+        uuid1 = file1.stem[:index1]
 
-        # deserialize json data
-        with open(file, "r") as read_file:
-            data: dict[str, dict[str, dict[str, int]] | int] = dict(json.load(read_file))
-            # print(f"data: {data}")
+        for file2 in json2_files:
+            suffix2 = file2.suffix[0]
 
-        # Always keep the highest DataVersion number
-        if data["DataVersion"] > output_json["DataVersion"]:
-            output_json["DataVersion"] = data["DataVersion"]
+            if suffix2 not in file2.stem:
+                sys.exit(f"\nError: Aborting script.   {file2.name} has unexpected name.\n"
+                        f"       Valid name format: {{UUID}}.X.json, where X is a sequence number.")
 
-        # Loop through the outer keys (categories such as "crafted" or "broken" or "mined")
-        for outer_key in data["stats"]:
+            index2 = file2.stem.index(suffix2)
+            uuid2 = file2.stem[:index2]
 
-            # Create outer key if it doesn't already exist
-            if outer_key not in output_json["stats"]:
-                output_json["stats"][outer_key] = {}
-                # print(f"outer_key: {outer_key}")
+            if uuid1 == uuid2:
+                print(f"{uuid1} Match found")
+                matches += 1
+                matched_files = [file1, file2]
 
-            # Loop through the inner keys (actual minecraft items)
-            for inner_key, value in data["stats"][outer_key].items():
+                output_json: dict[str, dict[str, dict[str, int]] | int] = {"stats": {}, "DataVersion": 0}
 
-                # Create inner key if it doesn't already exist
-                if inner_key not in output_json["stats"][outer_key]:
-                    output_json["stats"][outer_key][inner_key] = 0
-                    # print(f"        inner_key: {inner_key} -> {data['stats'][outer_key][inner_key]}")
+                for file in matched_files:
+                    # deserialize json data
+                    with open(file, "r") as read_file:
+                        data: dict[str, dict[str, dict[str, int]] | int] = dict(json.load(read_file))
+                        # print(f"data: {data}")
 
-                output_json["stats"][outer_key][inner_key] += value
+                    # Always keep the highest DataVersion number
+                    if data["DataVersion"] > output_json["DataVersion"]:
+                        output_json["DataVersion"] = data["DataVersion"]
 
-                # Currently, Minecraft loses its mind if values are larger than 2,147,483,647
-                if output_json["stats"][outer_key][inner_key] >= 2_147_483_647:
-                    output_json["stats"][outer_key][inner_key] = 2_147_483_647
+                    # Loop through the outer keys (categories such as "crafted" or "broken" or "mined")
+                    for outer_key in data["stats"]:
 
-    # Build the output file's name using the discovered UUID
-    output_file_path = target / f"{uuid}.json"
+                        # Create outer key if it doesn't already exist
+                        if outer_key not in output_json["stats"]:
+                            output_json["stats"][outer_key] = {}
+                            # print(f"outer_key: {outer_key}")
 
-    # Write the output file to the target folder
-    with open(output_file_path, "w") as fp:
-        json.dump(output_json, fp, indent=4)
+                        # Loop through the inner keys (actual minecraft items)
+                        for inner_key, value in data["stats"][outer_key].items():
 
-    print(f"\n{output_file_path.name}\nFile created in {target} with the following contents:\n")
-    print(json.dumps(output_json, indent=4))
+                            # Create inner key if it doesn't already exist
+                            if inner_key not in output_json["stats"][outer_key]:
+                                output_json["stats"][outer_key][inner_key] = 0
+                                # print(f"inner_key: {inner_key} -> {data['stats'][outer_key][inner_key]}")
+
+                            output_json["stats"][outer_key][inner_key] += value
+
+                            # Currently, Minecraft loses its mind if values are larger than 2,147,483,647
+                            if output_json["stats"][outer_key][inner_key] >= 2_147_483_647:
+                                output_json["stats"][outer_key][inner_key] = 2_147_483_647
+
+                # Build the output file's name using the discovered UUID
+                output_file_path = target / f"{uuid1}.json"
+
+                # Write the output file to the target folder
+                with open(output_file_path, "w") as fp:
+                    json.dump(output_json, fp, indent=4)
+
+    print(f"Matched {matches} files")
+
+    # print(f"\n{output_file_path.name}\nFile created in {target} with the following contents:\n")
+    # print(json.dumps(output_json, indent=4))
 
 
 # ------------------------------------------------------
