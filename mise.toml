@@ -1,0 +1,13 @@
+[tools]
+python = "3.14"
+
+[tasks.setup]
+description = "Create .venv and install the test dependencies"
+run = """
+python -m venv .venv
+.venv/bin/pip install --group dev
+"""
+
+[tasks.tests]
+description = "Run the test suite"
+run = ".venv/bin/pytest"

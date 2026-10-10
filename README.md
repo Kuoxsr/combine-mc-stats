@@ -11,7 +11,7 @@ This script reads in two (or more) json files from a single folder, totals the v
 
 ## Running the script
 #### Environment
-To run the script, you need a [python 3.11 environment](https://www.python.org/downloads/release/python-3110/).  Explaining [how to install](https://duckduckgo.com/?q=how+to+install+python+3.11) that is beyond the scope of this document.  The script imports the modules `argparse`, `json`, `pathlib` and `sys`.  To my knowledge, these are all built-in modules, and shouldn't require any extra installation.
+The Python version this project uses is pinned in `mise.toml`, so installing [mise](https://mise.jdx.dev) and running `mise install` gives you the right interpreter.  The script imports only built-in modules — `argparse`, `json`, `pathlib` and `sys` — so there is nothing else to install in order to run it.
 
 #### Target folder and file naming convention
 Before running this script, find the files you want to combine and put them into a temporary folder that you create specifically for this process.
@@ -46,6 +46,26 @@ One way to run the script is to copy the script to the folder that contains the 
 ```
 
 I have not tested whether this script runs in a Windows environment, only Linux.  Your mileage may vary.  If you try it in Windows and it doesn't work, fix the problem and submit a pull request.  An issue in the bug tracker for that particular problem will likely go nowhere, because I do not own a copy of Windows in which to test.  If it _does_ work in Windows, let me know so that I can remove this paragraph.  It would also be helpful to let me know the proper syntax for that platform, so I can include examples for others.
+
+## Testing
+
+The tests use [pytest](https://pytest.org).  They build their own sample statistics files in a temporary folder, so they never touch your real stats.
+
+The environment is declared in two files — `mise.toml` pins the Python version and defines the tasks, and `pyproject.toml` declares pytest as a dev dependency.
+
+```bash
+mise install        # install the pinned Python
+mise run setup      # create .venv and install pytest
+mise run tests      # run the suite
+```
+
+The long form, if you would rather not use mise's tasks:
+
+```bash
+python -m venv .venv
+.venv/bin/pip install --group dev
+.venv/bin/pytest
+```
 
 ## Output file
 The final output file will be named `{UUID from the first file}.json`.  It will contain totals of all the stats that the two files share, and will contain all stats found in all files.  Put this file back into your `.minecraft/saves/{world name}/stats` folder, and you should be good to go, provided you didn't try to combine JSON files that contain something other than statistics.
