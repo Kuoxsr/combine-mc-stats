@@ -1,5 +1,5 @@
 # combine-mc-stats
-Consolidates several Java Edition statistics files into a single file.
+Consolidates Java Edition statistics files: for one player, or for several players at once.
 
 ## Why?
 This project exists because [a streamer I watch regularly](https://www.twitch.tv/carlcrafts) discovered one night that his Minecraft statistics had reset and he was currently adding to a completely new set of stats, despite being in a hardcore world that was 5900+ "days" old.
@@ -7,11 +7,20 @@ This project exists because [a streamer I watch regularly](https://www.twitch.tv
 Whether it was due to moving everything to a new PC or the installation of an update to the launcher or some other event that caused the stats to disappear, the problem he was facing was how to keep all the stats he had tallied-up over the last year+ of streaming without losing what had accumulated since the reset.
 
 ## What this script does
-This script reads in two (or more) json files from a single folder, totals the values if the files share the same statistic, adds a statistic if the subsequent files have it but the previous file(s) don't, and creates an output file that contains the combination.
+This script reads every statistics file in a folder and combines them **per player**.  Give it one player's files and it writes one combined file.  Give it the files for several players and it writes one combined file for each, keeping the players separate.
+
+Values are summed where the files share a statistic, and where they don't, the orphaned statistic is included in the combined file just as it was in the original.  No statistic left behind! 🛡️
+
+_So a whole server's-worth of players can be recombined in a single pass, rather than one player at a time._
+
+>[!IMPORTANT]
+>The files have to be renamed first, so that two files for the same player can sit in one folder together.  That is covered in [Target folder and file naming convention](#target-folder-and-file-naming-convention) below.
+
+The multi-player support came from a pull request by [Jacklynn](https://github.com/jacklynn-yan).  My very first pull request ever! 🥳🎉
 
 ## Running the script
-#### Environment
-The Python version this project uses is pinned in `mise.toml`, so installing [mise](https://mise.jdx.dev) and running `mise install` gives you the right interpreter.  The script imports only built-in modules — `argparse`, `json`, `pathlib` and `sys` — so there is nothing else to install in order to run it.
+#### Environment  <img height="24px" width="24px" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" />
+The [Python](https://www.python.org/) version that this project uses is pinned in `mise.toml`, so installing [mise](https://mise.jdx.dev) and running `mise install` gives you the right interpreter.  The script imports only built-in modules: `argparse`, `json`, `pathlib` and `sys` so there is nothing else to install in order to run it.
 
 #### Target folder and file naming convention
 Before running this script, find the files you want to combine and put them into a temporary folder that you create specifically for this process.
@@ -30,7 +39,7 @@ Because the files are named `{user's UUID}.json`, the backup file and the curren
 etc
 ```
 
-Technically, I haven't tried more than two, but that _should_ work.  On the other hand, What's the scenario in which you would have more than two files that you would need to combine?
+The script combines each player's `.1` and `.2` files.  Combining more than two files for a single player is not supported yet.
 
 #### The command to run the script
 One way to run the script is to copy the script to the folder that contains the files you want to combine.  With this method, it will already have the correct path, because you will have navigated there in your terminal to run the script:
@@ -47,11 +56,22 @@ One way to run the script is to copy the script to the folder that contains the 
 
 I have not tested whether this script runs in a Windows environment, only Linux.  Your mileage may vary.  If you try it in Windows and it doesn't work, fix the problem and submit a pull request.  An issue in the bug tracker for that particular problem will likely go nowhere, because I do not own a copy of Windows in which to test.  If it _does_ work in Windows, let me know so that I can remove this paragraph.  It would also be helpful to let me know the proper syntax for that platform, so I can include examples for others.
 
-## Testing
+## Output file
+The script writes one file per player, named `{UUID}.json`.  Each one contains the totals of that player's `.1` and `.2` files.  Put it back into your `.minecraft/saves/{world name}/stats` folder, and you should be good to go, provided you didn't try to combine JSON files that contain something other than statistics.
+
+#### Considerations
+There is nothing preventing a user from renaming the output file to `.1.json` and simply running the script again and again to combine statistics up to the limits of integers (which might break the script - I haven't tried this.)
+
+Also, I don't know how far back in Minecraft versions this script will work, since there have been many changes to the format of these files.  If you encounter something that doesn't work, submit a [bug report](https://github.com/Kuoxsr/combine-mc-stats/issues).
+
+Thanks for your interest in my project!  🥰
+
+---
+## Testing (for developers)
 
 The tests use [pytest](https://pytest.org).  They build their own sample statistics files in a temporary folder, so they never touch your real stats.
 
-The environment is declared in two files — `mise.toml` pins the Python version and defines the tasks, and `pyproject.toml` declares pytest as a dev dependency.
+The environment is declared in two files: `mise.toml` pins the Python version and defines the tasks, and `pyproject.toml` declares pytest as a dev dependency.
 
 ```bash
 mise install        # install the pinned Python
@@ -67,12 +87,3 @@ python -m venv .venv
 .venv/bin/pytest
 ```
 
-## Output file
-The final output file will be named `{UUID from the first file}.json`.  It will contain totals of all the stats that the two files share, and will contain all stats found in all files.  Put this file back into your `.minecraft/saves/{world name}/stats` folder, and you should be good to go, provided you didn't try to combine JSON files that contain something other than statistics.
-
-#### Considerations
-There is nothing preventing a user from renaming the output file to `.1.json` and simply running the script again and again to combine statistics up to the limits of integers (which might break the script - I haven't tried this.)
-
-Also, I don't know how far back in Minecraft versions this script will work, since there have been many changes to the format of these files.  If you encounter something that doesn't work, submit a [bug report](https://github.com/Kuoxsr/combine-mc-stats/issues).
-
-Thanks for your interest in my project!
