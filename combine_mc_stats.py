@@ -94,6 +94,17 @@ def write_stats(path: Path, data: dict) -> None:
         json.dump(data, file, indent=4)
 
 
+def player_uuid(path: Path) -> str:
+    """Return the player UUID from a stats filename like {UUID}.X.json."""
+    name, dot, sequence = path.stem.partition(".")
+
+    if not dot:
+        sys.exit(f"\nError: Aborting script.   {path.name} has unexpected name.\n"
+                 f"       Valid name format: {{UUID}}.X.json, where X is a sequence number.")
+
+    return name
+
+
 # Main -------------------------------------------------
 def main():
     """
@@ -124,26 +135,10 @@ def main():
     matches = 0
 
     for file1 in json1_files:
-
-        # Capture the UUID from the first file
-        suffix1 = file1.suffix[0]
-
-        if suffix1 not in file1.stem:
-            sys.exit(f"\nError: Aborting script.   {file1.name} has unexpected name.\n"
-                     f"       Valid name format: {{UUID}}.X.json, where X is a sequence number.")
-
-        index1 = file1.stem.index(suffix1)
-        uuid1 = file1.stem[:index1]
+        uuid1 = player_uuid(file1)
 
         for file2 in json2_files:
-            suffix2 = file2.suffix[0]
-
-            if suffix2 not in file2.stem:
-                sys.exit(f"\nError: Aborting script.   {file2.name} has unexpected name.\n"
-                        f"       Valid name format: {{UUID}}.X.json, where X is a sequence number.")
-
-            index2 = file2.stem.index(suffix2)
-            uuid2 = file2.stem[:index2]
+            uuid2 = player_uuid(file2)
 
             if uuid1 == uuid2:
                 print(f"{uuid1} Match found")
