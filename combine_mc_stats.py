@@ -82,6 +82,12 @@ def handle_command_line():
     return args
 
 
+def read_stats(path: Path) -> dict:
+    """Load one stats file."""
+    with open(path, "r") as read_file:
+        return dict(json.load(read_file))
+
+
 # Main -------------------------------------------------
 def main():
     """
@@ -142,9 +148,8 @@ def main():
 
                 for file in matched_files:
                     # deserialize json data
-                    with open(file, "r") as read_file:
-                        data: dict[str, dict[str, dict[str, int]] | int] = dict(json.load(read_file))
-                        # print(f"data: {data}")
+                    data: dict[str, dict[str, dict[str, int]] | int] = read_stats(file)
+                    # print(f"data: {data}")
 
                     # Always keep the highest DataVersion number
                     if data["DataVersion"] > output_json["DataVersion"]:
