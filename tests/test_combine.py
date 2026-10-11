@@ -46,3 +46,13 @@ def test_two_players_are_not_mixed(tmp_path, monkeypatch):
     out_b = read_stats(tmp_path / f"{PLAYER_B}.json")
     assert out_a["stats"]["minecraft:mined"]["minecraft:stone"] == 8
     assert out_b["stats"]["minecraft:mined"]["minecraft:stone"] == 300
+
+
+def test_values_are_capped_at_the_integer_limit(tmp_path, monkeypatch):
+    write_stats(tmp_path, PLAYER_A, 1, {"minecraft:mined": {"minecraft:stone": 2_000_000_000}})
+    write_stats(tmp_path, PLAYER_A, 2, {"minecraft:mined": {"minecraft:stone": 2_000_000_000}})
+
+    run_script(tmp_path, monkeypatch)
+
+    out = read_stats(tmp_path / f"{PLAYER_A}.json")
+    assert out["stats"]["minecraft:mined"]["minecraft:stone"] == 2_147_483_647
