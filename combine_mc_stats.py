@@ -84,8 +84,14 @@ def handle_command_line():
 
 def read_stats(path: Path) -> dict:
     """Load one stats file."""
-    with open(path, "r") as read_file:
-        return dict(json.load(read_file))
+    with open(path, "r") as file:
+        return dict(json.load(file))
+
+
+def write_stats(path: Path, data: dict) -> None:
+    """Write one stats file."""
+    with open(path, "w") as file:
+        json.dump(data, file, indent=4)
 
 
 # Main -------------------------------------------------
@@ -181,8 +187,7 @@ def main():
                 output_file_path = target / f"{uuid1}.json"
 
                 # Write the output file to the target folder
-                with open(output_file_path, "w") as fp:
-                    json.dump(output_json, fp, indent=4)
+                write_stats(output_file_path, output_json)
 
     print(f"Matched {matches} files")
 

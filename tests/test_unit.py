@@ -12,3 +12,14 @@ def test_read_stats_loads_a_file(tmp_path):
         "stats": {"minecraft:mined": {"minecraft:stone": 5}},
         "DataVersion": 42,
     }
+
+
+def test_write_stats_writes_a_file(tmp_path):
+    path = tmp_path / "stats.json"
+
+    combine.write_stats(path, {"stats": {"minecraft:mined": {"minecraft:stone": 5}}, "DataVersion": 42})
+
+    assert json.loads(path.read_text()) == {
+        "stats": {"minecraft:mined": {"minecraft:stone": 5}},
+        "DataVersion": 42,
+    }
