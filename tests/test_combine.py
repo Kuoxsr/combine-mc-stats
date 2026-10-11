@@ -2,6 +2,8 @@
 import json
 import sys
 
+import pytest
+
 import combine_mc_stats as combine
 
 PLAYER_A = "11111111-1111-1111-1111-111111111111"
@@ -56,3 +58,21 @@ def test_values_are_capped_at_the_integer_limit(tmp_path, monkeypatch):
 
     out = read_stats(tmp_path / f"{PLAYER_A}.json")
     assert out["stats"]["minecraft:mined"]["minecraft:stone"] == 2_147_483_647
+
+
+@pytest.mark.parametrize("index", [0, 1])
+def test_an_orphaned_stat_survives_the_merge(tmp_path, monkeypatch, index):
+    """A stat present in only one of the two files is kept in the output."""
+    sessions = [
+        {"minecraft:mined": {"minecraft:stone": 5}},      # session .1
+        {"minecraft:mined": {"minecraft:stone": 5}},      # session .2
+    ]
+    sessions[index] = {"minecraft:crafted": {"minecraft:oak_door": 7}}   # the orphan
+
+    write_stats(tmp_path, PLAYER_A, 1, sessions[0])
+    write_stats(tmp_path, PLAYER_A, 2, sessions[1])
+
+    run_script(tmp_path, monkeypatch)
+
+    out = read_stats(tmp_path / f"{PLAYER_A}.json")
+    assert out["stats"]["minecraft:crafted"]["minecraft:oak_door"] == 7
