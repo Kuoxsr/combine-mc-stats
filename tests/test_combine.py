@@ -76,3 +76,22 @@ def test_an_orphaned_stat_survives_the_merge(tmp_path, monkeypatch, index):
 
     out = read_stats(tmp_path / f"{PLAYER_A}.json")
     assert out["stats"]["minecraft:crafted"]["minecraft:oak_door"] == 7
+
+
+def test_orphans_from_both_files_are_kept(tmp_path, monkeypatch):
+    write_stats(tmp_path, PLAYER_A, 1, {
+        "minecraft:mined":   {"minecraft:stone": 5},
+        "minecraft:crafted": {"minecraft:oak_door": 3},   # orphan, only in .1
+    })
+    write_stats(tmp_path, PLAYER_A, 2, {
+        "minecraft:mined":   {"minecraft:stone": 4},
+        "minecraft:crafted": {"minecraft:torch": 9},      # orphan, only in .2
+    })
+
+    run_script(tmp_path, monkeypatch)
+
+    out = read_stats(tmp_path / f"{PLAYER_A}.json")
+    assert out["stats"] == {
+        "minecraft:mined":   {"minecraft:stone": 9},
+        "minecraft:crafted": {"minecraft:oak_door": 3, "minecraft:torch": 9},
+    }
