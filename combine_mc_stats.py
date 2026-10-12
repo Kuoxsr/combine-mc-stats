@@ -117,24 +117,19 @@ def merge_stats(files: list[Path]) -> dict:
             output_json["DataVersion"] = data["DataVersion"]
 
         # Loop through the outer keys (categories such as "crafted" or "broken" or "mined")
-        for outer_key in data["stats"]:
-
-            # Create outer key if it doesn't already exist
-            if outer_key not in output_json["stats"]:
-                output_json["stats"][outer_key] = {}
-
-            # Loop through the inner keys (actual minecraft items)
-            for inner_key, value in data["stats"][outer_key].items():
-
-                # Create inner key if it doesn't already exist
-                if inner_key not in output_json["stats"][outer_key]:
-                    output_json["stats"][outer_key][inner_key] = 0
-
-                # Currently, Minecraft loses its mind if values are larger than 2,147,483,647
-                total = output_json["stats"][outer_key][inner_key] + value
-                output_json["stats"][outer_key][inner_key] = cap(total)
+        for outer_key, stats in data["stats"].items():
+            output_json["stats"][outer_key] = merge_category(
+                output_json["stats"].get(outer_key, {}), stats)
 
     return output_json
+
+
+def merge_category(target: dict[str, int], source: dict[str, int]) -> dict[str, int]:
+    """Merge one stats category: sum every item's count, capped, into a new dict."""
+    merged = dict(target)
+    for key, value in source.items():
+        merged[key] = cap(merged.get(key, 0) + value)
+    return merged
 
 
 def cap(value: int) -> int:

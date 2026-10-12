@@ -101,6 +101,36 @@ def test_combine_exits_when_there_are_no_json_files(tmp_path):
         combine.combine(tmp_path)
 
 
+def test_merge_category_returns_the_summed_counts():
+    result = combine.merge_category({"minecraft:stone": 5},
+                               {"minecraft:stone": 3, "minecraft:dirt": 2})
+
+    assert result == {"minecraft:stone": 8, "minecraft:dirt": 2}
+
+
+def test_merge_category_keeps_counts_only_the_target_has():
+    result = combine.merge_category({"minecraft:stone": 5}, {"minecraft:dirt": 2})
+
+    assert result == {"minecraft:stone": 5, "minecraft:dirt": 2}
+
+
+def test_merge_category_leaves_its_inputs_alone():
+    target = {"minecraft:stone": 5}
+    source = {"minecraft:stone": 3}
+
+    combine.merge_category(target, source)
+
+    assert target == {"minecraft:stone": 5}
+    assert source == {"minecraft:stone": 3}
+
+
+def test_merge_category_caps_the_total():
+    result = combine.merge_category({"minecraft:stone": 2_147_483_646},
+                               {"minecraft:stone": 5})
+
+    assert result == {"minecraft:stone": 2_147_483_647}
+
+
 def test_cap_clamps_at_the_integer_limit():
     assert combine.cap(2_147_483_646) == 2_147_483_646
     assert combine.cap(2_147_483_647) == 2_147_483_647
