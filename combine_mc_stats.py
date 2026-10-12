@@ -185,9 +185,7 @@ def combine(directory: Path) -> None:
 
 # Main -------------------------------------------------
 def main():
-    """
-    Main program loop
-    """
+    """ Main program loop """
     args = handle_command_line()
     combine(args.path)
 
@@ -199,3 +197,4 @@ def main():
 # Run main program loop only if not called as a module
 if __name__ == "__main__":
     main()
+
