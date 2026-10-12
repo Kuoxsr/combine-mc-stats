@@ -63,3 +63,14 @@ def test_merge_stats_keeps_the_highest_data_version(tmp_path, versions):
     merged = combine.merge_stats([tmp_path / "a.1.json", tmp_path / "a.2.json"])
 
     assert merged["DataVersion"] == max(versions)
+
+
+def test_find_sessions_gathers_the_1_and_2_files(tmp_path):
+    combine.write_stats(tmp_path / "a.1.json", {"stats": {}, "DataVersion": 1})
+    combine.write_stats(tmp_path / "a.2.json", {"stats": {}, "DataVersion": 1})
+    combine.write_stats(tmp_path / "b.1.json", {"stats": {}, "DataVersion": 1})
+
+    ones, twos = combine.find_sessions(tmp_path)
+
+    assert ones == [tmp_path / "a.1.json", tmp_path / "b.1.json"]
+    assert twos == [tmp_path / "a.2.json"]

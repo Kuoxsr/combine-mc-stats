@@ -139,6 +139,12 @@ def merge_stats(files: list[Path]) -> dict:
     return output_json
 
 
+def find_sessions(directory: Path) -> tuple[list[Path], list[Path]]:
+    """Return the ``.1`` and ``.2`` stats files under directory, each sorted."""
+    return (sorted(directory.rglob("*.1.json")),
+            sorted(directory.rglob("*.2.json")))
+
+
 # Main -------------------------------------------------
 def main():
     """
@@ -161,8 +167,7 @@ def main():
     if files_found == 0:
         sys.exit(f"\nError: There are no JSON files under {target}")
 
-    json1_files: list[Path] = sorted([f for f in target.rglob('*.1.json')])
-    json2_files: list[Path] = sorted([f for f in target.rglob('*.2.json')])
+    json1_files, json2_files = find_sessions(target)
     print()
     
     print(f"Combining from {len(json1_files)} old files and {len(json2_files)} new files")
