@@ -113,8 +113,7 @@ def merge_stats(files: list[Path]) -> dict:
         data: dict[str, dict[str, dict[str, int]] | int] = read_stats(file)
 
         # Always keep the highest DataVersion number
-        if data["DataVersion"] > output_json["DataVersion"]:
-            output_json["DataVersion"] = data["DataVersion"]
+        output_json["DataVersion"] = max(output_json["DataVersion"], data["DataVersion"])
 
         # Loop through the outer keys (categories such as "crafted" or "broken" or "mined")
         for outer_key, stats in data["stats"].items():
