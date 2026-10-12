@@ -33,11 +33,11 @@ __maintainer__ = "kuoxsr@gmail.com"
 __status__ = "Prototype"
 
 # Import modules
-from pathlib import Path
-from typing import TypedDict
 import argparse
 import json
 import sys
+from pathlib import Path
+from typing import TypedDict
 
 
 def handle_command_line():
