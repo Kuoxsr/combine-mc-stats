@@ -40,7 +40,7 @@ from pathlib import Path
 from typing import TypedDict
 
 
-def handle_command_line():
+def handle_command_line() -> argparse.Namespace:
     """Handle arguments supplied by the user."""
     parser = argparse.ArgumentParser(
         prog="Sound Pack Checker",
@@ -183,7 +183,7 @@ def combine(directory: Path) -> None:
 
 
 # Main -------------------------------------------------
-def main():
+def main() -> None:
     """Run the main program loop."""
     args = handle_command_line()
     combine(args.path)
