@@ -77,7 +77,6 @@ def handle_command_line() -> argparse.Namespace:
     # Finally, make the argument a Path  (does this work?)
     args.path = Path(args.path).resolve()
 
-    # print(f"args: {args}"); exit()
     return args
 
 
