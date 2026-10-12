@@ -74,3 +74,13 @@ def test_find_sessions_gathers_the_1_and_2_files(tmp_path):
 
     assert ones == [tmp_path / "a.1.json", tmp_path / "b.1.json"]
     assert twos == [tmp_path / "a.2.json"]
+
+
+def test_pair_by_uuid_matches_1_and_2_files(tmp_path):
+    a1 = tmp_path / "aaa.1.json"
+    a2 = tmp_path / "aaa.2.json"
+    b1 = tmp_path / "bbb.1.json"
+    b2 = tmp_path / "bbb.2.json"
+    c1 = tmp_path / "ccc.1.json"          # c has no .2, so it pairs with nothing
+
+    assert combine.pair_by_uuid([a1, b1, c1], [a2, b2]) == [(a1, a2), (b1, b2)]

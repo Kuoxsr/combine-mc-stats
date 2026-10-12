@@ -145,6 +145,17 @@ def find_sessions(directory: Path) -> tuple[list[Path], list[Path]]:
             sorted(directory.rglob("*.2.json")))
 
 
+def pair_by_uuid(ones: list[Path], twos: list[Path]) -> list[tuple[Path, Path]]:
+    """Pair each ``.1`` file with the ``.2`` file that shares its player UUID."""
+    pairs = []
+    for one in ones:
+        for two in twos:
+            if player_uuid(one) == player_uuid(two):
+                pairs.append((one, two))
+                break        # each player has at most one .2, so stop searching
+    return pairs
+
+
 # Main -------------------------------------------------
 def main():
     """
@@ -173,23 +184,18 @@ def main():
     print(f"Combining from {len(json1_files)} old files and {len(json2_files)} new files")
     matches = 0
 
-    for file1 in json1_files:
-        uuid1 = player_uuid(file1)
+    for file1, file2 in pair_by_uuid(json1_files, json2_files):
+        uuid = player_uuid(file1)
+        print(f"{uuid} Match found")
+        matches += 1
 
-        for file2 in json2_files:
-            uuid2 = player_uuid(file2)
+        output_json = merge_stats([file1, file2])
 
-            if uuid1 == uuid2:
-                print(f"{uuid1} Match found")
-                matches += 1
+        # Build the output file's name using the discovered UUID
+        output_file_path = target / f"{uuid}.json"
 
-                output_json = merge_stats([file1, file2])
-
-                # Build the output file's name using the discovered UUID
-                output_file_path = target / f"{uuid1}.json"
-
-                # Write the output file to the target folder
-                write_stats(output_file_path, output_json)
+        # Write the output file to the target folder
+        write_stats(output_file_path, output_json)
 
     print(f"Matched {matches} files")
 
