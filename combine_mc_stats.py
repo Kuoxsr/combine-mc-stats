@@ -105,6 +105,40 @@ def player_uuid(path: Path) -> str:
     return name
 
 
+def merge_stats(files: list[Path]) -> dict:
+    """Merge a player's stats files, summing values and keeping the highest DataVersion."""
+    output_json: dict[str, dict[str, dict[str, int]] | int] = {"stats": {}, "DataVersion": 0}
+
+    for file in files:
+        data: dict[str, dict[str, dict[str, int]] | int] = read_stats(file)
+
+        # Always keep the highest DataVersion number
+        if data["DataVersion"] > output_json["DataVersion"]:
+            output_json["DataVersion"] = data["DataVersion"]
+
+        # Loop through the outer keys (categories such as "crafted" or "broken" or "mined")
+        for outer_key in data["stats"]:
+
+            # Create outer key if it doesn't already exist
+            if outer_key not in output_json["stats"]:
+                output_json["stats"][outer_key] = {}
+
+            # Loop through the inner keys (actual minecraft items)
+            for inner_key, value in data["stats"][outer_key].items():
+
+                # Create inner key if it doesn't already exist
+                if inner_key not in output_json["stats"][outer_key]:
+                    output_json["stats"][outer_key][inner_key] = 0
+
+                output_json["stats"][outer_key][inner_key] += value
+
+                # Currently, Minecraft loses its mind if values are larger than 2,147,483,647
+                if output_json["stats"][outer_key][inner_key] >= 2_147_483_647:
+                    output_json["stats"][outer_key][inner_key] = 2_147_483_647
+
+    return output_json
+
+
 # Main -------------------------------------------------
 def main():
     """
@@ -143,40 +177,8 @@ def main():
             if uuid1 == uuid2:
                 print(f"{uuid1} Match found")
                 matches += 1
-                matched_files = [file1, file2]
 
-                output_json: dict[str, dict[str, dict[str, int]] | int] = {"stats": {}, "DataVersion": 0}
-
-                for file in matched_files:
-                    # deserialize json data
-                    data: dict[str, dict[str, dict[str, int]] | int] = read_stats(file)
-                    # print(f"data: {data}")
-
-                    # Always keep the highest DataVersion number
-                    if data["DataVersion"] > output_json["DataVersion"]:
-                        output_json["DataVersion"] = data["DataVersion"]
-
-                    # Loop through the outer keys (categories such as "crafted" or "broken" or "mined")
-                    for outer_key in data["stats"]:
-
-                        # Create outer key if it doesn't already exist
-                        if outer_key not in output_json["stats"]:
-                            output_json["stats"][outer_key] = {}
-                            # print(f"outer_key: {outer_key}")
-
-                        # Loop through the inner keys (actual minecraft items)
-                        for inner_key, value in data["stats"][outer_key].items():
-
-                            # Create inner key if it doesn't already exist
-                            if inner_key not in output_json["stats"][outer_key]:
-                                output_json["stats"][outer_key][inner_key] = 0
-                                # print(f"inner_key: {inner_key} -> {data['stats'][outer_key][inner_key]}")
-
-                            output_json["stats"][outer_key][inner_key] += value
-
-                            # Currently, Minecraft loses its mind if values are larger than 2,147,483,647
-                            if output_json["stats"][outer_key][inner_key] >= 2_147_483_647:
-                                output_json["stats"][outer_key][inner_key] = 2_147_483_647
+                output_json = merge_stats([file1, file2])
 
                 # Build the output file's name using the discovered UUID
                 output_file_path = target / f"{uuid1}.json"

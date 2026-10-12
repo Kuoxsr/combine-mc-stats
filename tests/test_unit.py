@@ -39,3 +39,27 @@ def test_player_uuid_rejects_a_name_without_a_sequence():
 
     with pytest.raises(SystemExit):
         combine.player_uuid(path)
+
+
+def test_merge_stats_sums_values(tmp_path):
+    combine.write_stats(tmp_path / "a.1.json", {"stats": {"minecraft:mined": {"minecraft:stone": 5}}, "DataVersion": 100})
+    combine.write_stats(tmp_path / "a.2.json", {"stats": {"minecraft:mined": {"minecraft:stone": 3}}, "DataVersion": 100})
+
+    merged = combine.merge_stats([tmp_path / "a.1.json", tmp_path / "a.2.json"])
+
+    assert merged["stats"]["minecraft:mined"]["minecraft:stone"] == 8
+
+
+@pytest.mark.parametrize(
+    "versions",
+    [(100, 3578), (3578, 100)],
+    ids=["highest last", "highest first"],
+)
+def test_merge_stats_keeps_the_highest_data_version(tmp_path, versions):
+    first, second = versions
+    combine.write_stats(tmp_path / "a.1.json", {"stats": {"minecraft:mined": {"minecraft:stone": 5}}, "DataVersion": first})
+    combine.write_stats(tmp_path / "a.2.json", {"stats": {"minecraft:mined": {"minecraft:stone": 5}}, "DataVersion": second})
+
+    merged = combine.merge_stats([tmp_path / "a.1.json", tmp_path / "a.2.json"])
+
+    assert merged["DataVersion"] == max(versions)
