@@ -130,13 +130,16 @@ def merge_stats(files: list[Path]) -> dict:
                 if inner_key not in output_json["stats"][outer_key]:
                     output_json["stats"][outer_key][inner_key] = 0
 
-                output_json["stats"][outer_key][inner_key] += value
-
                 # Currently, Minecraft loses its mind if values are larger than 2,147,483,647
-                if output_json["stats"][outer_key][inner_key] >= 2_147_483_647:
-                    output_json["stats"][outer_key][inner_key] = 2_147_483_647
+                total = output_json["stats"][outer_key][inner_key] + value
+                output_json["stats"][outer_key][inner_key] = cap(total)
 
     return output_json
+
+
+def cap(value: int) -> int:
+    """Clamp a stat to the largest value a Minecraft counter can hold."""
+    return min(value, 2_147_483_647)
 
 
 def find_sessions(directory: Path) -> tuple[list[Path], list[Path]]:

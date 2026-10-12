@@ -99,3 +99,10 @@ def test_combine_writes_a_merged_file_per_player(tmp_path):
 def test_combine_exits_when_there_are_no_json_files(tmp_path):
     with pytest.raises(SystemExit):
         combine.combine(tmp_path)
+
+
+def test_cap_clamps_at_the_integer_limit():
+    assert combine.cap(2_147_483_646) == 2_147_483_646
+    assert combine.cap(2_147_483_647) == 2_147_483_647
+    assert combine.cap(2_147_483_648) == 2_147_483_647
+    assert combine.cap(9_000_000_000) == 2_147_483_647
