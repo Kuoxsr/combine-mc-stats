@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-
 """
+Combine Minecraft statistics files.
+
 Problem: Automatically combine multiple Minecraft statistics files,
 in the event that they get cleared for some reason, and you don't realize
 until you have more stats in a second file.
@@ -40,10 +41,7 @@ import sys
 
 
 def handle_command_line():
-    """
-    Handle arguments supplied by the user
-    """
-
+    """Handle arguments supplied by the user."""
     parser = argparse.ArgumentParser(
         prog="Sound Pack Checker",
         description="generates lists of invalid connections between json and sound files.")
@@ -85,6 +83,7 @@ def handle_command_line():
 
 class StatsFile(TypedDict):
     """One Minecraft stats file: item categories plus a data version."""
+
     stats: dict[str, dict[str, int]]
     DataVersion: int
 
@@ -185,7 +184,7 @@ def combine(directory: Path) -> None:
 
 # Main -------------------------------------------------
 def main():
-    """ Main program loop """
+    """Run the main program loop."""
     args = handle_command_line()
     combine(args.path)
 
