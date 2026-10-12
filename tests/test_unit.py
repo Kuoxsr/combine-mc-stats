@@ -84,3 +84,18 @@ def test_pair_by_uuid_matches_1_and_2_files(tmp_path):
     c1 = tmp_path / "ccc.1.json"          # c has no .2, so it pairs with nothing
 
     assert combine.pair_by_uuid([a1, b1, c1], [a2, b2]) == [(a1, a2), (b1, b2)]
+
+
+def test_combine_writes_a_merged_file_per_player(tmp_path):
+    combine.write_stats(tmp_path / "a.1.json", {"stats": {"minecraft:mined": {"minecraft:stone": 5}}, "DataVersion": 100})
+    combine.write_stats(tmp_path / "a.2.json", {"stats": {"minecraft:mined": {"minecraft:stone": 3}}, "DataVersion": 100})
+
+    combine.combine(tmp_path)
+
+    out = combine.read_stats(tmp_path / "a.json")
+    assert out["stats"]["minecraft:mined"]["minecraft:stone"] == 8
+
+
+def test_combine_exits_when_there_are_no_json_files(tmp_path):
+    with pytest.raises(SystemExit):
+        combine.combine(tmp_path)

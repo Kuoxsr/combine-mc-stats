@@ -156,51 +156,36 @@ def pair_by_uuid(ones: list[Path], twos: list[Path]) -> list[tuple[Path, Path]]:
     return pairs
 
 
-# Main -------------------------------------------------
-def main():
-    """
-    Main program loop
-    This function generates a sounds.json file from a folder structure of .ogg files
-    """
+def combine(directory: Path) -> None:
+    """Combine every player's stats files under directory, one output each."""
+    json_files: list[Path] = sorted([f for f in directory.rglob('*.json')])
+    if len(json_files) == 0:
+        sys.exit(f"\nError: There are no JSON files under {directory}")
 
-    args = handle_command_line()
-
-    target: Path = args.path
-    # print(f"target: {target}")
-    # exit()
-    
-    data_version: int = 0
-    uuid: str = ""
-
-    # For each json stats file in the target folder
-    json_files: list[Path] = sorted([f for f in target.rglob('*.json')])
-    files_found = len(json_files)
-    if files_found == 0:
-        sys.exit(f"\nError: There are no JSON files under {target}")
-
-    json1_files, json2_files = find_sessions(target)
+    json1_files, json2_files = find_sessions(directory)
     print()
-    
     print(f"Combining from {len(json1_files)} old files and {len(json2_files)} new files")
-    matches = 0
 
+    matches = 0
     for file1, file2 in pair_by_uuid(json1_files, json2_files):
         uuid = player_uuid(file1)
         print(f"{uuid} Match found")
         matches += 1
 
         output_json = merge_stats([file1, file2])
-
-        # Build the output file's name using the discovered UUID
-        output_file_path = target / f"{uuid}.json"
-
-        # Write the output file to the target folder
+        output_file_path = directory / f"{uuid}.json"
         write_stats(output_file_path, output_json)
 
     print(f"Matched {matches} files")
 
-    # print(f"\n{output_file_path.name}\nFile created in {target} with the following contents:\n")
-    # print(json.dumps(output_json, indent=4))
+
+# Main -------------------------------------------------
+def main():
+    """
+    Main program loop
+    """
+    args = handle_command_line()
+    combine(args.path)
 
 
 # ------------------------------------------------------
