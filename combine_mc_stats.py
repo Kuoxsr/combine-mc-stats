@@ -33,6 +33,7 @@ __status__ = "Prototype"
 
 # Import modules
 from pathlib import Path
+from typing import TypedDict
 import argparse
 import json
 import sys
@@ -82,13 +83,19 @@ def handle_command_line():
     return args
 
 
-def read_stats(path: Path) -> dict:
+class StatsFile(TypedDict):
+    """One Minecraft stats file: item categories plus a data version."""
+    stats: dict[str, dict[str, int]]
+    DataVersion: int
+
+
+def read_stats(path: Path) -> StatsFile:
     """Load one stats file."""
     with open(path, "r") as file:
-        return dict(json.load(file))
+        return json.load(file)
 
 
-def write_stats(path: Path, data: dict) -> None:
+def write_stats(path: Path, data: StatsFile) -> None:
     """Write one stats file."""
     with open(path, "w") as file:
         json.dump(data, file, indent=4)
@@ -105,12 +112,12 @@ def player_uuid(path: Path) -> str:
     return name
 
 
-def merge_stats(files: list[Path]) -> dict:
+def merge_stats(files: list[Path]) -> StatsFile:
     """Merge a player's stats files, summing values and keeping the highest DataVersion."""
-    output_json: dict[str, dict[str, dict[str, int]] | int] = {"stats": {}, "DataVersion": 0}
+    output_json: StatsFile = {"stats": {}, "DataVersion": 0}
 
     for file in files:
-        data: dict[str, dict[str, dict[str, int]] | int] = read_stats(file)
+        data = read_stats(file)
 
         # Always keep the highest DataVersion number
         output_json["DataVersion"] = max(output_json["DataVersion"], data["DataVersion"])
