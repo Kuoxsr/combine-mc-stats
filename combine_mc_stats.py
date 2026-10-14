@@ -83,7 +83,7 @@ def handle_command_line() -> argparse.Namespace:
     # Does path folder exist on the file system?
     if not path.exists():
         print(f"Specified path not found. {path} is not a valid filesystem path.")
-        exit()
+        sys.exit()
 
     # Finally, make the argument a Path  (does this work?)
     args.path = Path(args.path).resolve()
@@ -112,7 +112,7 @@ def write_stats(path: Path, data: StatsFile) -> None:
 
 def player_uuid(path: Path) -> str:
     """Return the player UUID from a stats filename like {UUID}.X.json."""
-    name, dot, sequence = path.stem.partition(".")
+    name, dot, _ = path.stem.partition(".")
 
     if not dot:
         sys.exit(f"\nError: Aborting script.   {path.name} has unexpected name.\n"
@@ -176,7 +176,7 @@ def pair_by_uuid(ones: list[Path], twos: list[Path]) -> list[tuple[Path, Path]]:
 
 def combine(directory: Path) -> None:
     """Combine every player's stats files under directory, one output each."""
-    json_files: list[Path] = sorted([f for f in directory.rglob('*.json')])
+    json_files: list[Path] = sorted(directory.rglob("*.json"))
     if len(json_files) == 0:
         sys.exit(f"\nError: There are no JSON files under {directory}")
 

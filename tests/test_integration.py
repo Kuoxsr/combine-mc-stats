@@ -13,7 +13,7 @@ PLAYER_B = "22222222-2222-2222-2222-222222222222"
 def write_stats(folder, uuid, session, stats, data_version=100):
     """Write one stats file, named ``{uuid}.{session}.json``."""
     (folder / f"{uuid}.{session}.json").write_text(
-        json.dumps({"stats": stats, "DataVersion": data_version})
+        json.dumps({"stats": stats, "DataVersion": data_version}),
     )
 
 
