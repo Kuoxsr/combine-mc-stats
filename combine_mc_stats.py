@@ -2,23 +2,28 @@
 """
 Combine Minecraft statistics files.
 
-Problem: Automatically combine multiple Minecraft statistics files,
-in the event that they get cleared for some reason, and you don't realize
-until you have more stats in a second file.
+Problem: Minecraft statistics files get cleared for some reason,
+    and you don't realize until you have more stats in a second file.
+
 Target Users: Me/Us
+
 Target System: GNU/Linux/Unix/Mac
+
 Interface: Command-line
-Functional Requirements: Take a set of statistics json files and combine the totals within them
+
+Functional Requirements: Take a set of statistics json files
+    and combine the totals within them
+
 Notes:
+    Since the files we're interested in are named with a UUID
+    representing the player, all stats files for a given player
+    will have exactly the same name.
 
-    Since the files we're interested in are named with a UUID representing the player, all stats
-    files for a given player will have exactly the same name.  Due to this, I propose that we add
+    Due to this, I propose that we add ".X" before ".json" where
+    .X is a sequence number to differentiate each file from the others
 
-    ".X" before ".json"
-
-    ... where .X is a sequence number to differentiate each file from the others
-
-    In my test folder, I have used a randomized UUID
+    ==> {UUID}.1.json <==
+    ==> {UUID}.2.json <==
 
     Make sure that the target folder only has the renamed files in it
 
@@ -43,16 +48,22 @@ from typing import TypedDict
 def handle_command_line() -> argparse.Namespace:
     """Handle arguments supplied by the user."""
     parser = argparse.ArgumentParser(
-        prog="Sound Pack Checker",
-        description="generates lists of invalid connections between json and sound files.")
+        prog="Combine Minecraft Statistics",
+        description=("combines multiple Minecraft statistics files "
+                     "into a single, integrated whole."))
 
-    parser.add_argument("-v", "--version", action="version", version="%(prog)s version " + __version__)
+    parser.add_argument(
+            "-v",
+            "--version",
+            action="version",
+            version="%(prog)s version " + __version__)
 
     parser.add_argument(
         "path",
         action="store",
         nargs=argparse.REMAINDER,
-        help="Path to the sounds.json file you want to check.  The file name itself is not required.")
+        help=("Directory holding the stats files to combine.  "
+              "Defaults to the current directory."))
 
     args = parser.parse_args()
 
@@ -105,22 +116,27 @@ def player_uuid(path: Path) -> str:
 
     if not dot:
         sys.exit(f"\nError: Aborting script.   {path.name} has unexpected name.\n"
-                 f"       Valid name format: {{UUID}}.X.json, where X is a sequence number.")
+                 f"       Valid name format: {{UUID}}.X.json,"
+                 f" where X is a sequence number.")
 
     return name
 
 
 def merge_stats(files: list[Path]) -> StatsFile:
-    """Merge a player's stats files, summing values and keeping the highest DataVersion."""
+    """Merge a player's stats files.
+
+    Sum values and keep the highest DataVersion.
+    """
     output_json: StatsFile = {"stats": {}, "DataVersion": 0}
 
     for file in files:
         data = read_stats(file)
 
         # Always keep the highest DataVersion number
-        output_json["DataVersion"] = max(output_json["DataVersion"], data["DataVersion"])
+        output_json["DataVersion"] = max(
+                output_json["DataVersion"], data["DataVersion"])
 
-        # Loop through the outer keys (categories such as "crafted" or "broken" or "mined")
+        # Loop through outer keys (categories such as "crafted" or "broken" or "mined")
         for outer_key, stats in data["stats"].items():
             output_json["stats"][outer_key] = merge_category(
                 output_json["stats"].get(outer_key, {}), stats)
@@ -165,8 +181,8 @@ def combine(directory: Path) -> None:
         sys.exit(f"\nError: There are no JSON files under {directory}")
 
     json1_files, json2_files = find_sessions(directory)
-    print()
-    print(f"Combining from {len(json1_files)} old files and {len(json2_files)} new files")
+    print(f"\nCombining from {len(json1_files)} old files"
+          f" and {len(json2_files)} new files")
 
     matches = 0
     for file1, file2 in pair_by_uuid(json1_files, json2_files):
