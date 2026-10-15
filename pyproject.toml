@@ -30,6 +30,7 @@ ignore = [
     "ARG",      # unused args (fixtures)
     "FBT",      # boolean positional flags
     "S311",     # pseudo-random generator
+    "S603",     # subprocess in a test
     "INP001",   # __init__.py warning
     "E501",     # line-length
 ]   

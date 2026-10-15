@@ -82,8 +82,8 @@ def handle_command_line() -> argparse.Namespace:
 
     # Does path folder exist on the file system?
     if not path.exists():
-        print(f"Specified path not found. {path} is not a valid filesystem path.")
-        sys.exit()
+        sys.exit(f"\nError: Specified path not found. "
+                 f"{path} is not a valid filesystem path.")
 
     # Finally, make the argument a Path  (does this work?)
     args.path = Path(args.path).resolve()

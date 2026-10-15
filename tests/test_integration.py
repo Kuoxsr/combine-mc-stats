@@ -1,6 +1,8 @@
 """Tests for combine-mc-stats."""
 import json
+import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -95,3 +97,18 @@ def test_orphans_from_both_files_are_kept(tmp_path, monkeypatch):
         "minecraft:mined":   {"minecraft:stone": 9},
         "minecraft:crafted": {"minecraft:oak_door": 3, "minecraft:torch": 9},
     }
+
+
+def test_a_missing_path_exits_nonzero_and_reports_on_stderr(tmp_path):
+    """A bad path must report on stderr and exit non-zero, like the other errors."""
+    script = Path(__file__).resolve().parent.parent / "combine_mc_stats.py"
+
+    result = subprocess.run(
+        [sys.executable, str(script), str(tmp_path / "nope")],
+        capture_output=True,
+        check=False,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    assert "Specified path not found" in result.stderr
