@@ -44,13 +44,17 @@ import sys
 from pathlib import Path
 from typing import TypedDict
 
+# The folder the script writes its combined files into, created in the working directory
+OUTPUT_DIRECTORY_NAME = "combine-mc-stats-output"
+
 
 def handle_command_line() -> argparse.Namespace:
     """Handle arguments supplied by the user."""
     parser = argparse.ArgumentParser(
         prog="Combine Minecraft Statistics",
         description=("combines multiple Minecraft statistics files "
-                     "into a single, integrated whole."))
+                     "into a single, integrated whole.  Output goes to a "
+                     f"{OUTPUT_DIRECTORY_NAME} folder in the working directory."))
 
     parser.add_argument(
         "-v",
@@ -158,9 +162,9 @@ def cap(value: int) -> int:
 
 
 def find_sessions(directory: Path) -> tuple[list[Path], list[Path]]:
-    """Return the ``.1`` and ``.2`` stats files under directory, each sorted."""
-    return (sorted(directory.rglob("*.1.json")),
-            sorted(directory.rglob("*.2.json")))
+    """Return the ``.1`` and ``.2`` stats files in directory, each sorted."""
+    return (sorted(directory.glob("*.1.json")),
+            sorted(directory.glob("*.2.json")))
 
 
 def pair_by_uuid(ones: list[Path], twos: list[Path]) -> list[tuple[Path, Path]]:
@@ -174,11 +178,13 @@ def pair_by_uuid(ones: list[Path], twos: list[Path]) -> list[tuple[Path, Path]]:
     return pairs
 
 
-def combine(directory: Path) -> None:
-    """Combine every player's stats files under directory, one output each."""
-    json_files: list[Path] = sorted(directory.rglob("*.json"))
+def combine(directory: Path, output_directory: Path) -> None:
+    """Combine every player's stats files, writing the results to output_directory."""
+    json_files: list[Path] = sorted(directory.glob("*.json"))
     if len(json_files) == 0:
-        sys.exit(f"\nError: There are no JSON files under {directory}")
+        sys.exit(f"\nError: There are no JSON files in {directory}")
+
+    output_directory.mkdir(exist_ok=True)
 
     json1_files, json2_files = find_sessions(directory)
     print(f"\nCombining from {len(json1_files)} old files"
@@ -191,17 +197,17 @@ def combine(directory: Path) -> None:
         matches += 1
 
         output_json = merge_stats([file1, file2])
-        output_file_path = directory / f"{uuid}.json"
-        write_stats(output_file_path, output_json)
+        write_stats(output_directory / f"{uuid}.json", output_json)
 
     print(f"Matched {matches} files")
+    print(f"Wrote {matches} files to {output_directory}")
 
 
 # Main -------------------------------------------------
 def main() -> None:
     """Run the main program loop."""
     args = handle_command_line()
-    combine(args.path)
+    combine(args.path, Path.cwd() / OUTPUT_DIRECTORY_NAME)
 
 
 # ------------------------------------------------------

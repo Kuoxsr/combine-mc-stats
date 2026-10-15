@@ -19,10 +19,10 @@ _So a whole server's-worth of players can be recombined in a single pass, rather
 The multi-player support came from a pull request by [Jacklynn](https://github.com/jacklynn-yan).  My very first pull request ever! 🥳🎉
 
 ## Running the script
-#### Environment  <img height="24px" width="24px" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" />
+### Environment  <img height="24px" width="24px" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" />
 The [Python](https://www.python.org/) version that this project uses is pinned in `mise.toml`, so installing [mise](https://mise.jdx.dev) and running `mise install` gives you the right interpreter.  The script imports only built-in modules: `argparse`, `json`, `pathlib`, `sys` and `typing`, so there is nothing else to install in order to run it.
 
-#### Target folder and file naming convention
+### Target folder and file naming convention
 Before running this script, find the files you want to combine and put them into a temporary folder that you create specifically for this process.
 
 You will find the statistics files in the following folders:
@@ -41,7 +41,7 @@ etc
 
 The script combines each player's `.1` and `.2` files.  Combining more than two files for a single player is not supported yet.
 
-#### The command to run the script
+### The command to run the script
 One way to run the script is to copy the script to the folder that contains the files you want to combine.  With this method, it will already have the correct path, because you will have navigated there in your terminal to run the script:
 
 ```
@@ -54,15 +54,15 @@ One way to run the script is to copy the script to the folder that contains the 
 [you@localhost:~]$ ./combine_mc_stats.py /path/to/target/folder 
 ```
 
+Either way, the combined files land in a `combine-mc-stats-output` folder created in the working directory — where you ran the script, not the folder you passed.  See [Output file](#output-file) below.
+
 I have not tested whether this script runs in a Windows environment, only Linux.  Your mileage may vary.  If you try it in Windows and it doesn't work, fix the problem and submit a pull request.  An issue in the bug tracker for that particular problem will likely go nowhere, because I do not own a copy of Windows in which to test.  If it _does_ work in Windows, let me know so that I can remove this paragraph.  It would also be helpful to let me know the proper syntax for that platform, so I can include examples for others.
 
-## Output file
-The script writes one file per player, named `{UUID}.json`.  Each one contains the totals of that player's `.1` and `.2` files.  Put it back into your `.minecraft/saves/{world name}/stats` folder, and you should be good to go, provided you didn't try to combine JSON files that contain something other than statistics.
+### Output file
+The script writes one file per player, named `{UUID}.json`, into a `combine-mc-stats-output` folder that it creates in the working directory.  Each one contains the totals of that player's `.1` and `.2` files.  Copy the output file(s) back into your `.minecraft/saves/{world name}/stats` folder, and you should be good to go, provided you didn't try to combine JSON files that contain something other than statistics.
 
-#### Considerations
-There is nothing preventing a user from renaming the output file to `.1.json` and simply running the script again and again to combine statistics up to the limits of integers (which might break the script - I haven't tried this.)
-
-Also, I don't know how far back in Minecraft versions this script will work, since there have been many changes to the format of these files.  If you encounter something that doesn't work, submit a [bug report](https://github.com/Kuoxsr/combine-mc-stats/issues).
+## Report any bugs
+I don't know how far back (or forward) in Minecraft versions this script will work, since there have been many changes to the format of these files.  If you encounter something that doesn't work, submit a [bug report](https://github.com/Kuoxsr/combine-mc-stats/issues).
 
 Thanks for your interest in my project!  🥰
 

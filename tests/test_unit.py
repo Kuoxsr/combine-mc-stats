@@ -90,15 +90,36 @@ def test_combine_writes_a_merged_file_per_player(tmp_path):
     combine.write_stats(tmp_path / "a.1.json", {"stats": {"minecraft:mined": {"minecraft:stone": 5}}, "DataVersion": 100})
     combine.write_stats(tmp_path / "a.2.json", {"stats": {"minecraft:mined": {"minecraft:stone": 3}}, "DataVersion": 100})
 
-    combine.combine(tmp_path)
+    output_directory = tmp_path / "out"
+    combine.combine(tmp_path, output_directory)
 
-    out = combine.read_stats(tmp_path / "a.json")
+    out = combine.read_stats(output_directory / "a.json")
     assert out["stats"]["minecraft:mined"]["minecraft:stone"] == 8
+
+
+def test_combine_leaves_the_input_directory_alone(tmp_path):
+    combine.write_stats(tmp_path / "a.1.json", {"stats": {"minecraft:mined": {"minecraft:stone": 5}}, "DataVersion": 100})
+    combine.write_stats(tmp_path / "a.2.json", {"stats": {"minecraft:mined": {"minecraft:stone": 3}}, "DataVersion": 100})
+
+    combine.combine(tmp_path, tmp_path / "out")
+
+    assert not (tmp_path / "a.json").exists()
+
+
+def test_combine_reuses_an_existing_output_directory(tmp_path):
+    combine.write_stats(tmp_path / "a.1.json", {"stats": {"minecraft:mined": {"minecraft:stone": 5}}, "DataVersion": 100})
+    combine.write_stats(tmp_path / "a.2.json", {"stats": {"minecraft:mined": {"minecraft:stone": 3}}, "DataVersion": 100})
+    output_directory = tmp_path / "out"
+    output_directory.mkdir()
+
+    combine.combine(tmp_path, output_directory)     # must not raise
+
+    assert (output_directory / "a.json").exists()
 
 
 def test_combine_exits_when_there_are_no_json_files(tmp_path):
     with pytest.raises(SystemExit):
-        combine.combine(tmp_path)
+        combine.combine(tmp_path, tmp_path / "out")
 
 
 def test_merge_category_returns_the_summed_counts():

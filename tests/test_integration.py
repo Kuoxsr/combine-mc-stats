@@ -20,6 +20,7 @@ def write_stats(folder, uuid, session, stats, data_version=100):
 
 
 def run_script(folder, monkeypatch):
+    monkeypatch.chdir(folder)      # the output directory is created in the cwd
     monkeypatch.setattr(sys, "argv", ["combine_mc_stats.py", str(folder)])
     combine.main()
 
@@ -28,13 +29,18 @@ def read_stats(path):
     return json.loads(path.read_text())
 
 
+def read_output(folder, uuid):
+    """Read a player's combined file from the output directory."""
+    return read_stats(folder / combine.OUTPUT_DIRECTORY_NAME / f"{uuid}.json")
+
+
 def test_one_player_two_sessions_are_summed(tmp_path, monkeypatch):
     write_stats(tmp_path, PLAYER_A, 1, {"minecraft:mined": {"minecraft:stone": 5}})
     write_stats(tmp_path, PLAYER_A, 2, {"minecraft:mined": {"minecraft:stone": 3}})
 
     run_script(tmp_path, monkeypatch)
 
-    out = read_stats(tmp_path / f"{PLAYER_A}.json")
+    out = read_output(tmp_path, PLAYER_A)
     assert out["stats"]["minecraft:mined"]["minecraft:stone"] == 8
 
 
@@ -46,8 +52,8 @@ def test_two_players_are_not_mixed(tmp_path, monkeypatch):
 
     run_script(tmp_path, monkeypatch)
 
-    out_a = read_stats(tmp_path / f"{PLAYER_A}.json")
-    out_b = read_stats(tmp_path / f"{PLAYER_B}.json")
+    out_a = read_output(tmp_path, PLAYER_A)
+    out_b = read_output(tmp_path, PLAYER_B)
     assert out_a["stats"]["minecraft:mined"]["minecraft:stone"] == 8
     assert out_b["stats"]["minecraft:mined"]["minecraft:stone"] == 300
 
@@ -58,7 +64,7 @@ def test_values_are_capped_at_the_integer_limit(tmp_path, monkeypatch):
 
     run_script(tmp_path, monkeypatch)
 
-    out = read_stats(tmp_path / f"{PLAYER_A}.json")
+    out = read_output(tmp_path, PLAYER_A)
     assert out["stats"]["minecraft:mined"]["minecraft:stone"] == 2_147_483_647
 
 
@@ -76,7 +82,7 @@ def test_an_orphaned_stat_survives_the_merge(tmp_path, monkeypatch, index):
 
     run_script(tmp_path, monkeypatch)
 
-    out = read_stats(tmp_path / f"{PLAYER_A}.json")
+    out = read_output(tmp_path, PLAYER_A)
     assert out["stats"]["minecraft:crafted"]["minecraft:oak_door"] == 7
 
 
@@ -92,7 +98,7 @@ def test_orphans_from_both_files_are_kept(tmp_path, monkeypatch):
 
     run_script(tmp_path, monkeypatch)
 
-    out = read_stats(tmp_path / f"{PLAYER_A}.json")
+    out = read_output(tmp_path, PLAYER_A)
     assert out["stats"] == {
         "minecraft:mined":   {"minecraft:stone": 9},
         "minecraft:crafted": {"minecraft:oak_door": 3, "minecraft:torch": 9},
