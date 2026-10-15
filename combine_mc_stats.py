@@ -33,7 +33,7 @@ Command-line arguments:
     --version   (-v)    Show version number
 """
 
-__version__ = "0.3"
+__version__ = "0.3.1"
 __maintainer__ = "kuoxsr@gmail.com"
 __status__ = "Prototype"
 
