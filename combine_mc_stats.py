@@ -53,10 +53,10 @@ def handle_command_line() -> argparse.Namespace:
                      "into a single, integrated whole."))
 
     parser.add_argument(
-            "-v",
-            "--version",
-            action="version",
-            version="%(prog)s version " + __version__)
+        "-v",
+        "--version",
+        action="version",
+        version="%(prog)s version " + __version__)
 
     parser.add_argument(
         "path",
