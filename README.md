@@ -20,7 +20,7 @@ The multi-player support came from a pull request by [Jacklynn](https://github.c
 
 ## Running the script
 #### Environment  <img height="24px" width="24px" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" />
-The [Python](https://www.python.org/) version that this project uses is pinned in `mise.toml`, so installing [mise](https://mise.jdx.dev) and running `mise install` gives you the right interpreter.  The script imports only built-in modules: `argparse`, `json`, `pathlib` and `sys` so there is nothing else to install in order to run it.
+The [Python](https://www.python.org/) version that this project uses is pinned in `mise.toml`, so installing [mise](https://mise.jdx.dev) and running `mise install` gives you the right interpreter.  The script imports only built-in modules: `argparse`, `json`, `pathlib`, `sys` and `typing`, so there is nothing else to install in order to run it.
 
 #### Target folder and file naming convention
 Before running this script, find the files you want to combine and put them into a temporary folder that you create specifically for this process.
@@ -71,7 +71,9 @@ Thanks for your interest in my project!  🥰
 
 The tests use [pytest](https://pytest.org).  They build their own sample statistics files in a temporary folder, so they never touch your real stats.
 
-The environment is declared in two files: `mise.toml` pins the Python version and defines the tasks, and `pyproject.toml` declares pytest as a dev dependency.
+The environment is declared in two files: `mise.toml` pins the Python version and defines the tasks, and `pyproject.toml` declares pytest as a dev dependency and holds the lint configuration.
+
+The linter is [Ruff](https://docs.astral.sh/ruff/), configured under `[tool.ruff]` in `pyproject.toml`.  It selects every rule and then disables the ones this project declines, so each exception is recorded next to its reason.
 
 ```bash
 mise install        # install the pinned Python
